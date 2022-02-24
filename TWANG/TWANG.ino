@@ -63,7 +63,7 @@ int playerPosition;         // Stores the player position
 int playerPositionModifier; // +/- adjustment to player position
 bool playerAlive;
 long killTime;
-int lives = 3;
+jij int lives = 3;
 
 // POOLS
 int lifeLEDs[3] = {52, 50, 40};
