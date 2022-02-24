@@ -21,19 +21,19 @@ int16_t ax, ay, az;
 int16_t gx, gy, gz;
 
 // LED setup
-#define NUM_LEDS 475
+#define NUM_LEDS 150
 #define DATA_PIN 3
 #define CLOCK_PIN 4
-#define LED_COLOR_ORDER BGR //GBR
-#define BRIGHTNESS 150
-#define DIRECTION 1            // 0 = right to left, 1 = left to right
+#define LED_COLOR_ORDER GBR //GBR
+#define BRIGHTNESS 10
+#define DIRECTION 0            // 0 = right to left, 1 = left to right
 #define MIN_REDRAW_INTERVAL 16 // Min redraw interval (ms) 33 = 30fps / 16 = 63fps
 #define USE_GRAVITY 1          // 0/1 use gravity (LED strip going up wall)
 #define BEND_POINT 550         // 0/1000 point at which the LED strip goes up the wall
 
 // GAME
 long previousMillis = 0; // Time of the last redraw
-int levelNumber = 0;
+int levelNumber = 5;
 long lastInputTime = 0;
 #define TIMEOUT 30000
 #define LEVEL_COUNT 9
@@ -99,7 +99,8 @@ void setup()
     accelgyro.initialize();
 
     // Fast LED
-    FastLED.addLeds<APA102, DATA_PIN, CLOCK_PIN, LED_COLOR_ORDER>(leds, NUM_LEDS);
+    //    FastLED.addLeds<APA102, DATA_PIN, CLOCK_PIN, LED_COLOR_ORDER>(leds, NUM_LEDS);
+    FastLED.addLeds<WS2812B, DATA_PIN, LED_COLOR_ORDER>(leds, NUM_LEDS);
     FastLED.setBrightness(BRIGHTNESS);
     FastLED.setDither(1);
 
