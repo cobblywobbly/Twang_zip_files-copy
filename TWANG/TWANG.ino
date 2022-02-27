@@ -21,14 +21,13 @@ int16_t ax, ay, az;
 int16_t gx, gy, gz;
 
 // LED setup
-#define NUM_LEDS 150
+#define NUM_LEDS 300
 #define DATA_PIN 3
-#define CLOCK_PIN 4
-#define LED_COLOR_ORDER GBR //GBR
-#define BRIGHTNESS 10
+#define LED_COLOR_ORDER BGR //GBR
+#define BRIGHTNESS 100
 #define DIRECTION 0            // 0 = right to left, 1 = left to right
 #define MIN_REDRAW_INTERVAL 16 // Min redraw interval (ms) 33 = 30fps / 16 = 63fps
-#define USE_GRAVITY 1          // 0/1 use gravity (LED strip going up wall)
+#define USE_GRAVITY 0          // 0/1 use gravity (LED strip going up wall)
 #define BEND_POINT 550         // 0/1000 point at which the LED strip goes up the wall
 
 // GAME
@@ -63,7 +62,7 @@ int playerPosition;         // Stores the player position
 int playerPositionModifier; // +/- adjustment to player position
 bool playerAlive;
 long killTime;
-jij int lives = 3;
+int lives = 3;
 
 // POOLS
 int lifeLEDs[3] = {52, 50, 40};
