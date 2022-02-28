@@ -15,8 +15,8 @@
 #include "Boss.h"
 #include "Conveyor.h"
 
-MPU6050 accelgyroIC2(0x68);
-MPU6050 accelgyroIC1(0x69);
+MPU6050 accelgyroIC2(0x69);
+MPU6050 accelgyroIC1(0x68);
 
 int16_t ax1, ay1, az1;
 int16_t gx1, gy1, gz1;
