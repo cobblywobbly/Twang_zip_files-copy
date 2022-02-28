@@ -15,8 +15,8 @@
 #include "Boss.h"
 #include "Conveyor.h"
 
-MPU6050 accelgyroIC1(0x68);
-MPU6050 accelgyroIC2(0x69);
+MPU6050 accelgyroIC2(0x68);
+MPU6050 accelgyroIC1(0x69);
 
 int16_t ax1, ay1, az1;
 int16_t gx1, gy1, gz1;
@@ -38,6 +38,8 @@ int16_t gx2, gy2, gz2;
 long previousMillis = 0; // Time of the last redraw
 int levelNumber = 0;
 long lastInputTime = 0;
+long lastInputTime2 = 0;
+
 #define TIMEOUT 30000
 #define LEVEL_COUNT 9
 #define MAX_VOLUME 10
@@ -50,12 +52,16 @@ iSin isin = iSin();
 #define JOYSTICK_DEADZONE 5    // Angle to ignore
 int joystickTilt = 0;          // Stores the angle of the joystick
 int joystickWobble = 0;        // Stores the max amount of acceleration (wobble)
+int joystickTilt2 = 0;         // Stores the angle of the joystick
+int joystickWobble2 = 0;
 
 // WOBBLE ATTACK
 #define ATTACK_WIDTH 70     // Width of the wobble attack, world is 1000 wide
 #define ATTACK_DURATION 500 // Duration of a wobble attack (ms)
 long attackMillis = 0;      // Time the attack started
-bool attacking = 0;         // Is the attack in progress?
+bool attacking = 0;
+long attackMillis2 = 0;
+bool attacking2 = 0; // Is the attack in progress?
 #define BOSS_WIDTH 40
 
 // PLAYER
@@ -64,6 +70,8 @@ char *stage;                // what stage the game is at (PLAY/DEAD/WIN/GAMEOVER
 long stageStartTime;        // Stores the time the stage changed for stages that are time based
 int playerPosition;         // Stores the player position
 int playerPositionModifier; // +/- adjustment to player position
+int playerPosition2;        // Stores the player position
+int playerPositionModifier2;
 bool playerAlive;
 long killTime;
 int lives = 3;
@@ -90,6 +98,8 @@ Boss boss = Boss();
 CRGB leds[NUM_LEDS];
 RunningMedian MPUAngleSamples = RunningMedian(5);
 RunningMedian MPUWobbleSamples = RunningMedian(5);
+RunningMedian MPUAngleSamples2 = RunningMedian(5);
+RunningMedian MPUWobbleSamples2 = RunningMedian(5);
 
 void setup()
 {
@@ -129,7 +139,7 @@ void loop()
 
     if (stage == "PLAY")
     {
-        if (attacking)
+        if (attacking || attacking2)
         {
             SFXattacking(); // Attack Sound
         }
@@ -146,6 +156,7 @@ void loop()
     if (mm - previousMillis >= MIN_REDRAW_INTERVAL)
     {
         getInput();
+        getInput2();
         long frameTimer = mm;
         previousMillis = mm;
 
@@ -176,30 +187,66 @@ void loop()
             if (attacking && attackMillis + ATTACK_DURATION < mm)
                 attacking = 0;
 
-            // If not attacking, check if they should be
+            if (attacking2 && attackMillis2 + ATTACK_DURATION < mm)
+                attacking2 = 0;
+
+            // If player not attacking, check if they should be
             if (!attacking && joystickWobble > ATTACK_THRESHOLD)
             {
                 attackMillis = mm;
                 attacking = 1;
             }
 
+            if (!attacking2 && joystickWobble2 > ATTACK_THRESHOLD)
+            {
+                attackMillis2 = mm;
+                attacking2 = 1;
+            }
+
             // If still not attacking, move!
             playerPosition += playerPositionModifier;
+
             if (!attacking)
             {
                 int moveAmount = (joystickTilt / 6.0);
+
                 if (DIRECTION)
                     moveAmount = -moveAmount;
+
                 moveAmount = constrain(moveAmount, -MAX_PLAYER_SPEED, MAX_PLAYER_SPEED);
                 playerPosition -= moveAmount;
+
                 if (playerPosition < 0)
                     playerPosition = 0;
-                if (playerPosition >= 1000 && !boss.Alive())
+                if (playerPosition > 1000)
+                    playerPosition = 1000;
+
+                if (abs(playerPosition - playerPosition2) <= 3 && !boss.Alive())
                 {
                     // Reached exit!
                     levelComplete();
                     return;
                 }
+            }
+
+            ////// PLAYER 2 MOVE
+
+            playerPosition2 += playerPositionModifier2;
+
+            if (!attacking2)
+            {
+                int moveAmount2 = (joystickTilt2 / 6.0);
+
+                if (DIRECTION)
+                    moveAmount2 = -moveAmount2;
+
+                moveAmount2 = constrain(moveAmount2, -MAX_PLAYER_SPEED, MAX_PLAYER_SPEED);
+                playerPosition2 -= moveAmount2;
+
+                if (playerPosition2 < 0)
+                    playerPosition2 = 0;
+                if (playerPosition2 > 1000)
+                    playerPosition2 = 1000;
             }
 
             if (inLava(playerPosition))
@@ -216,7 +263,8 @@ void loop()
             tickEnemies();
             drawPlayer();
             drawAttack();
-            drawExit();
+            drawAttack2();
+            // drawExit();
         }
         else if (stage == "DEAD")
         {
@@ -239,7 +287,8 @@ void loop()
                     brightness = 255;
                     leds[i] = CRGB(0, brightness, 0);
                 }
-                SFXwin(); // Wind sound
+
+                SFXwin(); // Win sound
             }
             else if (stageStartTime + 1000 > mm)
             {
@@ -324,7 +373,8 @@ void loadLevel()
     case 0:
         // Left or right?
         playerPosition = 200;
-        spawnEnemy(1, 0, 0, 0);
+        playerPosition2 = 400;
+        // spawnEnemy(1, 0, 0, 0); // commenting out for testing
         break;
     case 1:
         // Slow moving enemy
@@ -474,13 +524,20 @@ void levelComplete()
     updateLives();
 }
 
+// get rid of later, replace with other
 void nextLevel()
 {
-    levelNumber++;
-    if (levelNumber > LEVEL_COUNT)
-        levelNumber = 0;
+    levelNumber = levelNumber;
     loadLevel();
 }
+
+// void nextLevel()
+// {
+//     levelNumber++;
+//     if (levelNumber > LEVEL_COUNT)
+//         levelNumber = 0;
+//     loadLevel();
+// }
 
 void gameOver()
 {
@@ -591,15 +648,17 @@ void tickBoss()
 void drawPlayer()
 {
     leds[getLED(playerPosition)] = CRGB(0, 255, 0);
+    leds[getLED(playerPosition2)] = CRGB(0, 0, 255);
 }
 
-void drawExit()
-{
-    if (!boss.Alive())
-    {
-        leds[NUM_LEDS - 1] = CRGB(0, 0, 255);
-    }
-}
+// get rid of later
+// void drawExit()
+// {
+//     if (!boss.Alive())
+//     {
+//         leds[NUM_LEDS - 1] = CRGB(0, 0, 255);
+//     }
+// }
 
 void tickSpawners()
 {
@@ -742,6 +801,31 @@ int getLED(int pos)
     return constrain((int)map(pos, 0, 1000, 0, NUM_LEDS - 1), 0, NUM_LEDS - 1);
 }
 
+/// PLAYER2 DRAW ATTACK
+
+void drawAttack2()
+{
+    if (!attacking2)
+        return;
+    int n = map(millis() - attackMillis2, 0, ATTACK_DURATION, 100, 5);
+    for (int i = getLED(playerPosition2 - (ATTACK_WIDTH / 2)) + 1; i <= getLED(playerPosition2 + (ATTACK_WIDTH / 2)) - 1; i++)
+    {
+        leds[i] = CRGB(0, 0, n);
+    }
+    if (n > 90)
+    {
+        n = 255;
+        leds[getLED(playerPosition2)] = CRGB(255, 255, 255);
+    }
+    else
+    {
+        n = 0;
+        leds[getLED(playerPosition2)] = CRGB(0, 255, 0);
+    }
+    leds[getLED(playerPosition2 - (ATTACK_WIDTH / 2))] = CRGB(n, n, 255);
+    leds[getLED(playerPosition2 + (ATTACK_WIDTH / 2))] = CRGB(n, n, 255);
+}
+
 bool inLava(int pos)
 {
     // Returns if the player is in active lava
@@ -845,6 +929,29 @@ void getInput()
 }
 
 ////////// PLAYER 2 /////////
+
+void getInput2()
+{
+    accelgyroIC2.getMotion6(&ax2, &ay2, &az2, &gx2, &gy2, &gz2);
+    int a2 = (JOYSTICK_ORIENTATION == 0 ? ax2 : (JOYSTICK_ORIENTATION == 1 ? ay2 : az2)) / 166;
+    int g2 = (JOYSTICK_ORIENTATION == 0 ? gx2 : (JOYSTICK_ORIENTATION == 1 ? gy2 : gz2));
+    if (abs(a2) < JOYSTICK_DEADZONE)
+        a2 = 0;
+    if (a2 > 0)
+        a2 -= JOYSTICK_DEADZONE;
+    if (a2 < 0)
+        a2 += JOYSTICK_DEADZONE;
+
+    MPUAngleSamples2.add(a2);
+    MPUWobbleSamples2.add(g2);
+    joystickTilt2 = MPUAngleSamples2.getMedian();
+
+    if (JOYSTICK_DIRECTION == 1)
+    {
+        joystickTilt2 = 0 - joystickTilt2;
+    }
+    joystickWobble2 = abs(MPUWobbleSamples2.getHighest());
+}
 
 ////////////////////////////////////////////////////////
 
