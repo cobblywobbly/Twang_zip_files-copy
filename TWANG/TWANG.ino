@@ -50,6 +50,8 @@ iSin isin = iSin();
 #define JOYSTICK_DEADZONE 5    // Angle to ignore
 int joystickTilt = 0;          // Stores the angle of the joystick
 int joystickWobble = 0;        // Stores the max amount of acceleration (wobble)
+int joystickTilt2 = 0;         // Stores the angle of the joystick
+int joystickWobble2 = 0;
 
 // WOBBLE ATTACK
 #define ATTACK_WIDTH 70     // Width of the wobble attack, world is 1000 wide
@@ -64,6 +66,8 @@ char *stage;                // what stage the game is at (PLAY/DEAD/WIN/GAMEOVER
 long stageStartTime;        // Stores the time the stage changed for stages that are time based
 int playerPosition;         // Stores the player position
 int playerPositionModifier; // +/- adjustment to player position
+int playerPosition2;        // Stores the player position
+int playerPositionModifier2;
 bool playerAlive;
 long killTime;
 int lives = 3;
@@ -324,7 +328,8 @@ void loadLevel()
     case 0:
         // Left or right?
         playerPosition = 200;
-        spawnEnemy(1, 0, 0, 0);
+        playerPosition2 = 400;
+        // spawnEnemy(1, 0, 0, 0); // commenting out for testing
         break;
     case 1:
         // Slow moving enemy
@@ -591,6 +596,7 @@ void tickBoss()
 void drawPlayer()
 {
     leds[getLED(playerPosition)] = CRGB(0, 255, 0);
+    leds[getLED(playerPosition2)] = CRGB(0, 0, 255);
 }
 
 void drawExit()
