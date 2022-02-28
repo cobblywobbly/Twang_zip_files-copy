@@ -23,8 +23,8 @@ int16_t gx, gy, gz;
 // LED setup
 #define NUM_LEDS 300
 #define DATA_PIN 3
-#define LED_COLOR_ORDER BGR //GBR
-#define BRIGHTNESS 100
+#define LED_COLOR_ORDER BGR //this is right for my string, but could be others (GBR)
+#define BRIGHTNESS 150
 #define DIRECTION 0            // 0 = right to left, 1 = left to right
 #define MIN_REDRAW_INTERVAL 16 // Min redraw interval (ms) 33 = 30fps / 16 = 63fps
 #define USE_GRAVITY 0          // 0/1 use gravity (LED strip going up wall)
@@ -113,6 +113,9 @@ void setup()
     loadLevel();
 }
 
+////////// LOOP /////////////
+////////////////////////////
+
 void loop()
 {
     long mm = millis();
@@ -122,16 +125,16 @@ void loop()
     {
         if (attacking)
         {
-            SFXattacking();
+            SFXattacking(); // Attack Sound
         }
         else
         {
-            SFXtilt(joystickTilt);
+            SFXtilt(joystickTilt); // Tilt Sound
         }
     }
     else if (stage == "DEAD")
     {
-        SFXdead();
+        SFXdead(); // Death Sound
     }
 
     if (mm - previousMillis >= MIN_REDRAW_INTERVAL)
@@ -230,7 +233,7 @@ void loop()
                     brightness = 255;
                     leds[i] = CRGB(0, brightness, 0);
                 }
-                SFXwin();
+                SFXwin(); // Wind sound
             }
             else if (stageStartTime + 1000 > mm)
             {
@@ -240,7 +243,7 @@ void loop()
                     brightness = 255;
                     leds[i] = CRGB(0, brightness, 0);
                 }
-                SFXwin();
+                SFXwin(); // Wind sound
             }
             else if (stageStartTime + 1200 > mm)
             {
@@ -254,7 +257,7 @@ void loop()
         else if (stage == "COMPLETE")
         {
             FastLED.clear();
-            SFXcomplete();
+            SFXcomplete(); // Complete sound
             if (stageStartTime + 500 > mm)
             {
                 int n = max(map(((mm - stageStartTime)), 0, 500, NUM_LEDS, 0), 0);
@@ -303,6 +306,7 @@ void loop()
 // ---------------------------------
 // ------------ LEVELS -------------
 // ---------------------------------
+
 void loadLevel()
 {
     updateLives();
@@ -318,7 +322,7 @@ void loadLevel()
         break;
     case 1:
         // Slow moving enemy
-        spawnEnemy(900, 0, 1, 0);
+        spawnEnemy(1000, 0, 1, 0);
         break;
     case 2:
         // Spawning enemies at exit every 2 seconds
@@ -514,13 +518,13 @@ void tickEnemies()
                 if (enemyPool[i]._pos > playerPosition - (ATTACK_WIDTH / 2) && enemyPool[i]._pos < playerPosition + (ATTACK_WIDTH / 2))
                 {
                     enemyPool[i].Kill();
-                    SFXkill();
+                    SFXkill(); // Kill sound
                 }
             }
             if (inLava(enemyPool[i]._pos))
             {
                 enemyPool[i].Kill();
-                SFXkill();
+                SFXkill(); // Kill sound
             }
             // Draw (if still alive)
             if (enemyPool[i].Alive())
