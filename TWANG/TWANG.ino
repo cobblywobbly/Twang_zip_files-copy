@@ -373,8 +373,9 @@ void loadLevel()
     case 0:
         // Left or right?
         playerPosition = 200;
-        playerPosition2 = 400;
-        // spawnEnemy(1, 0, 0, 0); // commenting out for testing
+        playerPosition2 = 800;
+        spawnEnemy(1, 0, 0, 0); // commenting out for testing
+        spawnEnemy(1000, 0, 0, 0);
         break;
     case 1:
         // Slow moving enemy
