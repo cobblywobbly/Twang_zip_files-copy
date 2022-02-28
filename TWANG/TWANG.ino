@@ -15,10 +15,14 @@
 #include "Boss.h"
 #include "Conveyor.h"
 
-// MPU
-MPU6050 accelgyro;
-int16_t ax, ay, az;
-int16_t gx, gy, gz;
+MPU6050 accelgyroIC1(0x68);
+MPU6050 accelgyroIC2(0x69);
+
+int16_t ax1, ay1, az1;
+int16_t gx1, gy1, gz1;
+
+int16_t ax2, ay2, az2;
+int16_t gx2, gy2, gz2;
 
 // LED setup
 #define NUM_LEDS 300
@@ -32,7 +36,7 @@ int16_t gx, gy, gz;
 
 // GAME
 long previousMillis = 0; // Time of the last redraw
-int levelNumber = 5;
+int levelNumber = 0;
 long lastInputTime = 0;
 #define TIMEOUT 30000
 #define LEVEL_COUNT 9
@@ -96,7 +100,8 @@ void setup()
     // MPU
     Wire.begin();
     TWBR = 12; // set 400kHz mode @ 16MHz CPU or 200kHz mode @ 8MHz CPU (Sam added)
-    accelgyro.initialize();
+    accelgyroIC1.initialize();
+    accelgyroIC1.initialize();
 
     // Fast LED
     //    FastLED.addLeds<APA102, DATA_PIN, CLOCK_PIN, LED_COLOR_ORDER>(leds, NUM_LEDS);
@@ -817,9 +822,11 @@ void getInput()
     // if(digitalRead(rightButtonPinNumber) == HIGH) joystickTilt = 90;
     // if(digitalRead(attackButtonPinNumber) == HIGH) joystickWobble = ATTACK_THRESHOLD;
 
-    accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-    int a = (JOYSTICK_ORIENTATION == 0 ? ax : (JOYSTICK_ORIENTATION == 1 ? ay : az)) / 166;
-    int g = (JOYSTICK_ORIENTATION == 0 ? gx : (JOYSTICK_ORIENTATION == 1 ? gy : gz));
+    ///// PLAYER 1 ///////
+
+    accelgyroIC1.getMotion6(&ax1, &ay1, &az1, &gx1, &gy1, &gz1);
+    int a = (JOYSTICK_ORIENTATION == 0 ? ax1 : (JOYSTICK_ORIENTATION == 1 ? ay1 : az1)) / 166;
+    int g = (JOYSTICK_ORIENTATION == 0 ? gx1 : (JOYSTICK_ORIENTATION == 1 ? gy1 : gz1));
     if (abs(a) < JOYSTICK_DEADZONE)
         a = 0;
     if (a > 0)
@@ -836,6 +843,10 @@ void getInput()
     }
     joystickWobble = abs(MPUWobbleSamples.getHighest());
 }
+
+////////// PLAYER 2 /////////
+
+////////////////////////////////////////////////////////
 
 // ---------------------------------
 // -------------- SFX --------------
