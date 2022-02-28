@@ -36,7 +36,7 @@ int16_t gx2, gy2, gz2;
 
 // GAME
 long previousMillis = 0; // Time of the last redraw
-int levelNumber = 0;
+int levelNumber = 6;
 long lastInputTime = 0;
 long lastInputTime2 = 0;
 
@@ -379,45 +379,64 @@ void loadLevel()
         break;
     case 1:
         // Slow moving enemy
-        spawnEnemy(1000, 0, 1, 0);
+        playerPosition = 0;
+        playerPosition2 = 1000;
+        spawnEnemy(500, 0, 1, 0);
+        spawnEnemy(500, 0, -1, 0);
         break;
     case 2:
         // Spawning enemies at exit every 2 seconds
-        spawnPool[0].Spawn(1000, 3000, 2, 0, 0);
+        playerPosition = 0;
+        playerPosition2 = 1000;
+        spawnPool[0].Spawn(600, 3000, 2, 0, 0);
+        spawnPool[1].Spawn(400, 3000, 2, 1, 500);
         break;
     case 3:
         // Lava intro
-        spawnLava(400, 490, 2000, 2000, 0, "OFF");
-        spawnPool[0].Spawn(1000, 5500, 3, 0, 0);
+        playerPosition = 0;
+        playerPosition2 = 1000;
+        spawnLava(430, 510, 2000, 2000, 660, "OFF");
+        spawnLava(250, 340, 2000, 2000, 1320, "OFF");
+        spawnLava(600, 690, 2000, 2000, 0, "OFF");
         break;
     case 4:
         // Sin enemy
-        spawnEnemy(700, 1, 7, 275);
-        spawnEnemy(500, 1, 5, 250);
+        playerPosition = 0;
+        playerPosition2 = 1000;
+        spawnEnemy(400, 1, 5, 275);
+        spawnEnemy(500, 1, 7, 250);
+        spawnEnemy(600, 1, 3, 250);
         break;
     case 5:
         // Conveyor
-        spawnConveyor(100, 600, -1);
-        spawnEnemy(800, 0, 0, 0);
+        playerPosition = 0;
+        playerPosition2 = 1000;
+        spawnConveyor(300, 550, -1);
+        spawnConveyor(551, 700, 1);
+        spawnEnemy(810, 0, 0, 0);
+        spawnEnemy(250, 0, 0, 0);
         break;
     case 6:
         // Conveyor of enemies
-        spawnConveyor(50, 1000, 1);
-        spawnEnemy(300, 0, 0, 0);
-        spawnEnemy(400, 0, 0, 0);
+        playerPosition = 0;
+        playerPosition2 = 1000;
+        spawnConveyor(50, 490, 1);
+        spawnConveyor(510, 950, -1);
+        spawnEnemy(150, 0, 0, 0);
+        spawnEnemy(350, 0, 0, 0);
         spawnEnemy(500, 0, 0, 0);
-        spawnEnemy(600, 0, 0, 0);
-        spawnEnemy(700, 0, 0, 0);
-        spawnEnemy(800, 0, 0, 0);
-        spawnEnemy(900, 0, 0, 0);
+        spawnEnemy(850, 0, 0, 0);
+        spawnEnemy(650, 0, 0, 0);
         break;
     case 7:
         // Lava run
+        playerPosition = 0;
+        playerPosition2 = 1000;
         spawnLava(195, 300, 2000, 2000, 0, "OFF");
         spawnLava(350, 455, 2000, 2000, 0, "OFF");
         spawnLava(510, 610, 2000, 2000, 0, "OFF");
         spawnLava(660, 760, 2000, 2000, 0, "OFF");
-        spawnPool[0].Spawn(1000, 3800, 4, 0, 0);
+        spawnPool[0].Spawn(500, 3800, 4, 0, 0);
         break;
     case 8:
         // Sin enemy #2
@@ -526,20 +545,13 @@ void levelComplete()
     updateLives();
 }
 
-// get rid of later, replace with other
 void nextLevel()
 {
-    levelNumber = levelNumber;
+    levelNumber++;
+    if (levelNumber > LEVEL_COUNT)
+        levelNumber = 0;
     loadLevel();
 }
-
-// void nextLevel()
-// {
-//     levelNumber++;
-//     if (levelNumber > LEVEL_COUNT)
-//         levelNumber = 0;
-//     loadLevel();
-// }
 
 void gameOver()
 {
@@ -778,6 +790,7 @@ void tickConveyors()
     int b, dir, n, i, ss, ee, led;
     long m = 10000 + millis();
     playerPositionModifier = 0;
+    playerPositionModifier2 = 0;
 
     for (i = 0; i < conveyorCount; i++)
     {
@@ -806,6 +819,18 @@ void tickConveyors()
                 else
                 {
                     playerPositionModifier = (MAX_PLAYER_SPEED - 4);
+                }
+            }
+
+            if (playerPosition2 > conveyorPool[i]._startPoint && playerPosition2 < conveyorPool[i]._endPoint)
+            {
+                if (dir == -1)
+                {
+                    playerPositionModifier2 = -(MAX_PLAYER_SPEED - 4);
+                }
+                else
+                {
+                    playerPositionModifier2 = (MAX_PLAYER_SPEED - 4);
                 }
             }
         }
