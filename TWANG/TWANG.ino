@@ -94,6 +94,8 @@ Boss boss = Boss();
 CRGB leds[NUM_LEDS];
 RunningMedian MPUAngleSamples = RunningMedian(5);
 RunningMedian MPUWobbleSamples = RunningMedian(5);
+RunningMedian MPUAngleSamples2 = RunningMedian(5);
+RunningMedian MPUWobbleSamples2 = RunningMedian(5);
 
 void setup()
 {
@@ -852,6 +854,26 @@ void getInput()
 }
 
 ////////// PLAYER 2 /////////
+
+// accelgyroIC2.getMotion6(&ax2, &ay2, &az2, &gx2, &gy2, &gz2);
+// int a2 = (JOYSTICK_ORIENTATION == 0 ? ax2 : (JOYSTICK_ORIENTATION == 1 ? ay2 : az2)) / 166;
+// int g2 = (JOYSTICK_ORIENTATION == 0 ? gx2 : (JOYSTICK_ORIENTATION == 1 ? gy2 : gz2));
+// if (abs(a) < JOYSTICK_DEADZONE)
+//     a2 = 0;
+// if (a2 > 0)
+//     a2 -= JOYSTICK_DEADZONE;
+// if (a2 < 0)
+//     a2 += JOYSTICK_DEADZONE;
+// // MPUAngleSamples.add(a2);
+// // MPUWobbleSamples.add(g2);
+// // joystickTilt = MPUAngleSamples.getMedian();
+
+// if (JOYSTICK_DIRECTION == 1)
+// {
+//     joystickTilt2 = 0 - joystickTilt2;
+// }
+// joystickWobble2 = abs(MPUWobbleSamples.getHighest());
+// }
 
 ////////////////////////////////////////////////////////
 
