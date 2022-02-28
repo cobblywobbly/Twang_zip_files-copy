@@ -95,6 +95,7 @@ void setup()
 
     // MPU
     Wire.begin();
+    TWBR = 12; // set 400kHz mode @ 16MHz CPU or 200kHz mode @ 8MHz CPU (Sam added)
     accelgyro.initialize();
 
     // Fast LED
