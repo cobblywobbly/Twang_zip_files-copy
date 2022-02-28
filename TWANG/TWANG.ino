@@ -198,7 +198,7 @@ void loop()
                 playerPosition -= moveAmount;
                 if (playerPosition < 0)
                     playerPosition = 0;
-                if (playerPosition >= 1000 && !boss.Alive())
+                if (abs(playerPosition - playerPosition2) <= 3 && !boss.Alive())
                 {
                     // Reached exit!
                     levelComplete();
@@ -220,7 +220,7 @@ void loop()
             tickEnemies();
             drawPlayer();
             drawAttack();
-            drawExit();
+            // drawExit();
         }
         else if (stage == "DEAD")
         {
@@ -243,7 +243,7 @@ void loop()
                     brightness = 255;
                     leds[i] = CRGB(0, brightness, 0);
                 }
-                SFXwin(); // Wind sound
+                SFXwin(); // Win sound
             }
             else if (stageStartTime + 1000 > mm)
             {
@@ -599,13 +599,14 @@ void drawPlayer()
     leds[getLED(playerPosition2)] = CRGB(0, 0, 255);
 }
 
-void drawExit()
-{
-    if (!boss.Alive())
-    {
-        leds[NUM_LEDS - 1] = CRGB(0, 0, 255);
-    }
-}
+// get rid of later
+// void drawExit()
+// {
+//     if (!boss.Alive())
+//     {
+//         leds[NUM_LEDS - 1] = CRGB(0, 0, 255);
+//     }
+// }
 
 void tickSpawners()
 {
