@@ -205,31 +205,21 @@ void loop()
 
             // If still not attacking, move!
             playerPosition += playerPositionModifier;
-            playerPosition2 += playerPositionModifier2;
+
             if (!attacking)
             {
                 int moveAmount = (joystickTilt / 6.0);
-                int moveAmount2 = (joystickTilt2 / 6.0);
 
                 if (DIRECTION)
                     moveAmount = -moveAmount;
-                moveAmount2 = (joystickTilt2 / 6.0);
 
                 moveAmount = constrain(moveAmount, -MAX_PLAYER_SPEED, MAX_PLAYER_SPEED);
                 playerPosition -= moveAmount;
-
-                moveAmount2 = constrain(moveAmount2, -MAX_PLAYER_SPEED, MAX_PLAYER_SPEED);
-                playerPosition2 -= moveAmount2;
 
                 if (playerPosition < 0)
                     playerPosition = 0;
                 if (playerPosition > 1000)
                     playerPosition = 1000;
-
-                if (playerPosition2 < 0)
-                    playerPosition2 = 0;
-                if (playerPosition2 > 1000)
-                    playerPosition2 = 1000;
 
                 if (abs(playerPosition - playerPosition2) <= 3 && !boss.Alive())
                 {
@@ -237,6 +227,26 @@ void loop()
                     levelComplete();
                     return;
                 }
+            }
+
+            ////// PLAYER 2 MOVE
+
+            playerPosition2 += playerPositionModifier2;
+
+            if (!attacking2)
+            {
+                int moveAmount2 = (joystickTilt2 / 6.0);
+
+                if (DIRECTION)
+                    moveAmount2 = -moveAmount2;
+
+                moveAmount2 = constrain(moveAmount2, -MAX_PLAYER_SPEED, MAX_PLAYER_SPEED);
+                playerPosition2 -= moveAmount2;
+
+                if (playerPosition2 < 0)
+                    playerPosition2 = 0;
+                if (playerPosition2 > 1000)
+                    playerPosition2 = 1000;
             }
 
             if (inLava(playerPosition))
