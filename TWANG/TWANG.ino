@@ -461,6 +461,7 @@ void spawnEnemy(int pos, int dir, int sp, int wobble)
         {
             enemyPool[e].Spawn(pos, dir, sp, wobble);
             enemyPool[e].playerSide = pos > playerPosition ? 1 : -1;
+            enemyPool[e].playerSide2 = pos > playerPosition2 ? 1 : -1;
             return;
         }
     }
@@ -566,6 +567,26 @@ void die()
     killTime = millis();
 }
 
+void die2()
+{
+    playerAlive = 0;
+    if (levelNumber > 0)
+        lives--;
+    updateLives();
+    if (lives == 0)
+    {
+        levelNumber = 0;
+        lives = 3;
+    }
+    for (int p = 0; p < particleCount; p++)
+    {
+        particlePool[p].Spawn(playerPosition2);
+    }
+    stageStartTime = millis();
+    stage = "DEAD";
+    killTime = millis();
+}
+
 // ----------------------------------
 // -------- TICKS & RENDERS ---------
 // ----------------------------------
@@ -585,6 +606,16 @@ void tickEnemies()
                     SFXkill(); // Kill sound
                 }
             }
+
+            if (attacking2)
+            {
+                if (enemyPool[i]._pos > playerPosition2 - (ATTACK_WIDTH / 2) && enemyPool[i]._pos < playerPosition2 + (ATTACK_WIDTH / 2))
+                {
+                    enemyPool[i].Kill();
+                    SFXkill(); // Kill sound
+                }
+            }
+
             if (inLava(enemyPool[i]._pos))
             {
                 enemyPool[i].Kill();
@@ -601,6 +632,14 @@ void tickEnemies()
                 (enemyPool[i].playerSide == -1 && enemyPool[i]._pos >= playerPosition))
             {
                 die();
+                return;
+            }
+
+            if (
+                (enemyPool[i].playerSide2 == 1 && enemyPool[i]._pos <= playerPosition2) ||
+                (enemyPool[i].playerSide2 == -1 && enemyPool[i]._pos >= playerPosition2))
+            {
+                die2();
                 return;
             }
         }
