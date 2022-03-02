@@ -15,8 +15,8 @@
 #include "Boss.h"
 #include "Conveyor.h"
 
-MPU6050 accelgyroIC2(0x68);
-MPU6050 accelgyroIC1(0x69);
+MPU6050 accelgyroIC1(0x68);
+MPU6050 accelgyroIC2(0x69);
 
 int16_t ax1, ay1, az1;
 int16_t gx1, gy1, gz1;
@@ -65,7 +65,7 @@ bool attacking2 = 0; // Is the attack in progress?
 #define BOSS_WIDTH 40
 
 // PLAYER
-#define MAX_PLAYER_SPEED 10 // Max move speed of the player
+#define MAX_PLAYER_SPEED 8  // Max move speed of the player
 char *stage;                // what stage the game is at (PLAY/DEAD/WIN/GAMEOVER)
 long stageStartTime;        // Stores the time the stage changed for stages that are time based
 int playerPosition;         // Stores the player position
@@ -254,6 +254,11 @@ void loop()
                 die();
             }
 
+            if (inLava(playerPosition2))
+            {
+                die2();
+            }
+
             // Ticks and draw calls
             FastLED.clear();
             tickConveyors();
@@ -379,45 +384,64 @@ void loadLevel()
         break;
     case 1:
         // Slow moving enemy
-        spawnEnemy(1000, 0, 1, 0);
+        playerPosition = 0;
+        playerPosition2 = 1000;
+        spawnEnemy(500, 0, 1, 0);
+        spawnEnemy(500, 0, -1, 0);
         break;
     case 2:
         // Spawning enemies at exit every 2 seconds
-        spawnPool[0].Spawn(1000, 3000, 2, 0, 0);
+        playerPosition = 0;
+        playerPosition2 = 1000;
+        spawnPool[0].Spawn(600, 3000, 2, 0, 0);
+        spawnPool[1].Spawn(400, 3000, 2, 1, 750);
         break;
     case 3:
         // Lava intro
-        spawnLava(400, 490, 2000, 2000, 0, "OFF");
-        spawnPool[0].Spawn(1000, 5500, 3, 0, 0);
+        playerPosition = 0;
+        playerPosition2 = 1000;
+        spawnLava(430, 510, 2000, 2000, 660, "OFF");
+        spawnLava(250, 340, 2000, 2000, 1320, "OFF");
+        spawnLava(600, 690, 2000, 2000, 0, "OFF");
         break;
     case 4:
         // Sin enemy
-        spawnEnemy(700, 1, 7, 275);
-        spawnEnemy(500, 1, 5, 250);
+        playerPosition = 0;
+        playerPosition2 = 1000;
+        spawnEnemy(400, 1, 5, 275);
+        spawnEnemy(500, 1, 7, 250);
+        spawnEnemy(600, 1, 3, 250);
         break;
     case 5:
         // Conveyor
-        spawnConveyor(100, 600, -1);
-        spawnEnemy(800, 0, 0, 0);
+        playerPosition = 0;
+        playerPosition2 = 1000;
+        spawnConveyor(300, 550, -1);
+        spawnConveyor(551, 700, 1);
+        spawnEnemy(810, 0, 0, 0);
+        spawnEnemy(250, 0, 0, 0);
         break;
     case 6:
         // Conveyor of enemies
-        spawnConveyor(50, 1000, 1);
-        spawnEnemy(300, 0, 0, 0);
-        spawnEnemy(400, 0, 0, 0);
+        playerPosition = 0;
+        playerPosition2 = 1000;
+        spawnConveyor(50, 490, 1);
+        spawnConveyor(510, 950, -1);
+        spawnEnemy(150, 0, 0, 0);
+        spawnEnemy(350, 0, 0, 0);
         spawnEnemy(500, 0, 0, 0);
-        spawnEnemy(600, 0, 0, 0);
-        spawnEnemy(700, 0, 0, 0);
-        spawnEnemy(800, 0, 0, 0);
-        spawnEnemy(900, 0, 0, 0);
+        spawnEnemy(850, 0, 0, 0);
+        spawnEnemy(650, 0, 0, 0);
         break;
     case 7:
         // Lava run
+        playerPosition = 0;
+        playerPosition2 = 1000;
         spawnLava(195, 300, 2000, 2000, 0, "OFF");
         spawnLava(350, 455, 2000, 2000, 0, "OFF");
         spawnLava(510, 610, 2000, 2000, 0, "OFF");
         spawnLava(660, 760, 2000, 2000, 0, "OFF");
-        spawnPool[0].Spawn(1000, 3800, 4, 0, 0);
+        spawnPool[0].Spawn(500, 3800, 4, 0, 0);
         break;
     case 8:
         // Sin enemy #2
@@ -461,6 +485,7 @@ void spawnEnemy(int pos, int dir, int sp, int wobble)
         {
             enemyPool[e].Spawn(pos, dir, sp, wobble);
             enemyPool[e].playerSide = pos > playerPosition ? 1 : -1;
+            enemyPool[e].playerSide2 = pos > playerPosition2 ? 1 : -1;
             return;
         }
     }
@@ -525,20 +550,13 @@ void levelComplete()
     updateLives();
 }
 
-// get rid of later, replace with other
 void nextLevel()
 {
-    levelNumber = levelNumber;
+    levelNumber++;
+    if (levelNumber > LEVEL_COUNT)
+        levelNumber = 0;
     loadLevel();
 }
-
-// void nextLevel()
-// {
-//     levelNumber++;
-//     if (levelNumber > LEVEL_COUNT)
-//         levelNumber = 0;
-//     loadLevel();
-// }
 
 void gameOver()
 {
@@ -566,6 +584,26 @@ void die()
     killTime = millis();
 }
 
+void die2()
+{
+    playerAlive = 0;
+    if (levelNumber > 0)
+        lives--;
+    updateLives();
+    if (lives == 0)
+    {
+        levelNumber = 0;
+        lives = 3;
+    }
+    for (int p = 0; p < particleCount; p++)
+    {
+        particlePool[p].Spawn(playerPosition2);
+    }
+    stageStartTime = millis();
+    stage = "DEAD";
+    killTime = millis();
+}
+
 // ----------------------------------
 // -------- TICKS & RENDERS ---------
 // ----------------------------------
@@ -585,6 +623,16 @@ void tickEnemies()
                     SFXkill(); // Kill sound
                 }
             }
+
+            if (attacking2)
+            {
+                if (enemyPool[i]._pos > playerPosition2 - (ATTACK_WIDTH / 2) && enemyPool[i]._pos < playerPosition2 + (ATTACK_WIDTH / 2))
+                {
+                    enemyPool[i].Kill();
+                    SFXkill(); // Kill sound
+                }
+            }
+
             if (inLava(enemyPool[i]._pos))
             {
                 enemyPool[i].Kill();
@@ -601,6 +649,14 @@ void tickEnemies()
                 (enemyPool[i].playerSide == -1 && enemyPool[i]._pos >= playerPosition))
             {
                 die();
+                return;
+            }
+
+            if (
+                (enemyPool[i].playerSide2 == 1 && enemyPool[i]._pos <= playerPosition2) ||
+                (enemyPool[i].playerSide2 == -1 && enemyPool[i]._pos >= playerPosition2))
+            {
+                die2();
                 return;
             }
         }
@@ -739,6 +795,7 @@ void tickConveyors()
     int b, dir, n, i, ss, ee, led;
     long m = 10000 + millis();
     playerPositionModifier = 0;
+    playerPositionModifier2 = 0;
 
     for (i = 0; i < conveyorCount; i++)
     {
@@ -767,6 +824,18 @@ void tickConveyors()
                 else
                 {
                     playerPositionModifier = (MAX_PLAYER_SPEED - 4);
+                }
+            }
+
+            if (playerPosition2 > conveyorPool[i]._startPoint && playerPosition2 < conveyorPool[i]._endPoint)
+            {
+                if (dir == -1)
+                {
+                    playerPositionModifier2 = -(MAX_PLAYER_SPEED - 4);
+                }
+                else
+                {
+                    playerPositionModifier2 = (MAX_PLAYER_SPEED - 4);
                 }
             }
         }
