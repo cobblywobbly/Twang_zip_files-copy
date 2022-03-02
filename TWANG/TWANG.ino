@@ -15,8 +15,8 @@
 #include "Boss.h"
 #include "Conveyor.h"
 
-MPU6050 accelgyroIC2(0x69);
 MPU6050 accelgyroIC1(0x68);
+MPU6050 accelgyroIC2(0x69);
 
 int16_t ax1, ay1, az1;
 int16_t gx1, gy1, gz1;
@@ -36,7 +36,7 @@ int16_t gx2, gy2, gz2;
 
 // GAME
 long previousMillis = 0; // Time of the last redraw
-int levelNumber = 6;
+int levelNumber = 0;
 long lastInputTime = 0;
 long lastInputTime2 = 0;
 
@@ -65,7 +65,7 @@ bool attacking2 = 0; // Is the attack in progress?
 #define BOSS_WIDTH 40
 
 // PLAYER
-#define MAX_PLAYER_SPEED 10 // Max move speed of the player
+#define MAX_PLAYER_SPEED 8  // Max move speed of the player
 char *stage;                // what stage the game is at (PLAY/DEAD/WIN/GAMEOVER)
 long stageStartTime;        // Stores the time the stage changed for stages that are time based
 int playerPosition;         // Stores the player position
@@ -254,6 +254,11 @@ void loop()
                 die();
             }
 
+            if (inLava(playerPosition2))
+            {
+                die2();
+            }
+
             // Ticks and draw calls
             FastLED.clear();
             tickConveyors();
@@ -389,7 +394,7 @@ void loadLevel()
         playerPosition = 0;
         playerPosition2 = 1000;
         spawnPool[0].Spawn(600, 3000, 2, 0, 0);
-        spawnPool[1].Spawn(400, 3000, 2, 1, 500);
+        spawnPool[1].Spawn(400, 3000, 2, 1, 750);
         break;
     case 3:
         // Lava intro
